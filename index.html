@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-Time Stock Ticker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #111;
+        color: #eee;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100vh;
+      }
+      h1 {
+        color: #00ff88;
+      }
+      table {
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th, td {
+        border: 1px solid #444;
+        padding: 10px 20px;
+        text-align: center;
+      }
+      .up {
+        color: #00ff00;
+      }
+      .down {
+        color: #ff4040;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📈 Real-Time Stock Ticker</h1>
+    <table id="stockTable">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Price (USD)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      const tableBody = document.querySelector("#stockTable tbody");
+      let lastPrices = {};
+
+      socket.on("stockUpdate", (stocks) => {
+        tableBody.innerHTML = "";
+        for (let [symbol, price] of Object.entries(stocks)) {
+          const oldPrice = lastPrices[symbol];
+          const className =
+            oldPrice === undefined
+              ? ""
+              : price > oldPrice
+              ? "up"
+              : price < oldPrice
+              ? "down"
+              : "";
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${symbol}</td>
+            <td class="${className}">${price.toFixed(2)}</td>
+          `;
+          tableBody.appendChild(row);
+          lastPrices[symbol] = price;
+        }
+      });
+    </script>
+  </body>
+</html>
